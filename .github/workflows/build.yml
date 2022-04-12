@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  PROJECT_NAME: ""
+  PROJECT_NAME: "Bruno"
 
 jobs:
   Encanto:
