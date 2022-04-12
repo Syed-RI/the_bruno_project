@@ -1,2 +1,1 @@
-# the_bruno_project
-We don't talk about Bruno
+# We don't talk about Bruno
