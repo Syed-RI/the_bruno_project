@@ -1,0 +1,61 @@
+name: Miracle
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PROJECT_NAME: ""
+
+jobs:
+  Encanto:
+    runs-on: ubuntu-latest
+    steps:
+
+      - id: checkout
+        name: Checkout
+        uses: actions/checkout@v2
+
+      - id: detect_changes
+        name: Detect Changes
+        uses: zattoo/recognition@v2
+        with:
+          Domains: '{"Bruno": ["Bruno"], "Julieta": ["Julieta"], "Pepa": ["Pepa"]}' # name : path
+          token: ${{github.token}}
+
+      - id: read_projects
+        name: Read Projects
+        uses: Stockopedia/action-run-on-list@v1
+        with:
+          list: ${{ steps.detect_changes.outputs.projects }}
+          command: |
+            echo "detected changes in $item" 
+            # doing >> $GITHUB_ENV doesn't work here ☹️
+            # if more than one project level change is detected, the output will be the last one here 😬
+            echo "::set-output name=output1::$item" 
+
+      - id: update_variables
+        name: Update Variables
+        run: echo PROJECT_NAME=${{ steps.read_projects.outputs.output1 }} >> $GITHUB_ENV
+
+      - id: eval_project_name
+        name: Evaluate Project Name
+        run: |
+          # echo ${{steps.read_projects.outputs.output1}}
+          echo $PROJECT_NAME
+
+      - id: setup_dotnet
+        name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+
+      - id: restore_dependencies
+        name: Restore dependencies
+        run: dotnet restore "$PROJECT_NAME/$PROJECT_NAME.csproj"
+
+      - id: build_project
+        name: Build
+        run: dotnet build "$PROJECT_NAME/$PROJECT_NAME.csproj" --no-restore
